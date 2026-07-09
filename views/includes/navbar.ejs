@@ -8,7 +8,18 @@
       <div class="navbar-nav">
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/listings">All Listings</a>
-        <a class="nav-link" href="/listings/new">Add new Listing</a>
+        <% if (currUser && currUser.role === 'host') { %>
+          <a class="nav-link" href="/listings/new">Add new Listing</a>
+        <% } %>
+      </div>
+      <div class="navbar-nav ms-auto">
+        <% if (!currUser) { %>
+          <a class="nav-link" href="/signup"><b>Sign up</b></a>
+          <a class="nav-link" href="/login"><b>Log in</b></a>
+        <% } else { %>
+          <span class="nav-link me-2 text-muted">Hi, <%= currUser.username %></span>
+          <a class="nav-link" href="/logout"><b>Log out</b></a>
+        <% } %>
       </div>
     </div>
   </div>

@@ -25,15 +25,15 @@
     </div>
 
     <br>
+    <% if (currUser && listing.owner && currUser.id === listing.owner._id.toString()) { %>
     <div class="btns">
-
-    
-    <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edt-btn edit-btn">Edit</a>
-    <br><br>
-    <form method="post" action="/listing/<%= listing._id %>?_method=DELETE">
-        <button class="btn btn-dark offset-5 edt-btn">Delete</button>
-    </form>
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edt-btn edit-btn">Edit</a>
+        <br><br>
+        <form method="post" action="/listings/<%= listing._id %>?_method=DELETE">
+            <button class="btn btn-dark offset-5 edt-btn">Delete</button>
+        </form>
     </div>
+    <% } %>
 
     
     </div>
