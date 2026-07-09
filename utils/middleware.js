@@ -48,3 +48,21 @@ module.exports.isOwner = async (req, res, next) => {
         next(err);
     }
 };
+
+const Review = require('../models/review');
+
+module.exports.isReviewAuthor = async (req, res, next) => {
+    try {
+        const { id, reviewId } = req.params;
+        const review = await Review.findById(reviewId);
+        if (!review) {
+            return next(new ExpressError(404, "Review not found."));
+        }
+        if (!req.user || !review.author.equals(req.user.id)) {
+            return next(new ExpressError(403, "You do not have permission to modify this review."));
+        }
+        next();
+    } catch(err) {
+        next(err);
+    }
+};

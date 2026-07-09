@@ -7,12 +7,13 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema } = require("./schema.js");
+const { listingSchema, reviewSchema } = require("./schema.js");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("./models/user.js");
-const { verifyToken, isLoggedIn, isHost, isOwner } = require("./utils/middleware.js");
+const Review = require("./models/review.js");
+const { verifyToken, isLoggedIn, isHost, isOwner, isReviewAuthor } = require("./utils/middleware.js");
 
 const MONGO_URl = process.env.MONGO_URL || 'mongodb+srv://shailesh_pande01:Sp35189013@cluster0.az0w0gk.mongodb.net/wonderlust?retryWrites=true&w=majority&appName=Cluster0';
 
@@ -91,6 +92,14 @@ const validateListing = (req,res,next) => {
     next();
 };
 
+const validateReview = (req,res,next) => {
+    const {error} = reviewSchema.validate(req.body);
+    if (error) {
+        throw new ExpressError(400, error.details[0].message);
+    }
+    next();
+};
+
 //Index Route
 app.get("/listings",async (req,res) => {
     const allListings = await Listing.find({}).populate("owner");
@@ -105,7 +114,14 @@ app.get("/listings/new", isLoggedIn, isHost, (req,res) => {
 //Show Route
 app.get("/listings/:id",async (req,res) => {
     let {id} = req.params;
-    const listing = await Listing.findById(id).populate("owner");
+    const listing = await Listing.findById(id)
+        .populate({
+            path: "reviews",
+            populate: {
+                path: "author"
+            }
+        })
+        .populate("owner");
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
     }
@@ -140,6 +156,30 @@ app.delete("/listings/:id", isLoggedIn, isOwner, wrapAsync(async (req,res,next) 
     let deletedListing = await Listing.findByIdAndDelete(id);
     console.log(deletedListing);
     res.redirect("/listings");
+}));
+
+// Reviews Routes
+// POST Review
+app.post("/listings/:id/reviews", isLoggedIn, validateReview, wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+    newReview.author = req.user.id;
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    res.redirect(`/listings/${listing._id}`);
+}));
+
+// DELETE Review
+app.delete("/listings/:id/reviews/:reviewId", isLoggedIn, isReviewAuthor, wrapAsync(async (req, res) => {
+    let { id, reviewId } = req.params;
+
+    await Listing.findByIdAndUpdate(id, {$pull: {reviews: reviewId}});
+    await Review.findByIdAndDelete(reviewId);
+
+    res.redirect(`/listings/${id}`);
 }));
 
 // app.get("/testListing",async (re,res) => {
