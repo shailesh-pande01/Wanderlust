@@ -1,4 +1,5 @@
 {
+  "name": "wanderlust",
   "version": 2,
   "builds": [
     {
