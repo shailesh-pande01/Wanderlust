@@ -7,7 +7,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema } = require("./schemas.js");
+const { listingSchema } = require("./schema.js");
 
 const MONGO_URl = process.env.MONGO_URL || 'mongodb+srv://shailesh_pande01:Sp35189013@cluster0.az0w0gk.mongodb.net/wonderlust?retryWrites=true&w=majority&appName=Cluster0';
 
